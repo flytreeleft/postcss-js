@@ -1,8 +1,13 @@
+var postcss = require('postcss');
 var camelcase = require('camelcase-css');
 
 function process(node) {
     var name;
     var result = { };
+
+    if (typeof node === 'string') {
+        node = postcss.parse(node);
+    }
     node.each(function (child) {
         var rules = {};
         node.each(function (rule) {
