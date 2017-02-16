@@ -48,17 +48,17 @@ function decl(parent, name, value) {
     parent.push(postcss.decl({ prop: name, value: value }));
 }
 
-function parse(obj, parent) {
-    var name, value, node;
+function parse(obj, parent, options) {
+    var name, value, node, semicolon = options.semicolon;
     for ( name in obj ) {
         if ( obj.hasOwnProperty(name) ) {
             value = obj[name];
             if ( name[0] === '@' ) {
                 var part = name.match(/@([^\s]+)(\s+([\w\W]*)\s*)?/);
-                node = postcss.atRule({ name: part[1], params: part[3] || '' });
+                node = postcss.atRule({ name: part[1], params: part[3] || '', raws: { semicolon: semicolon } });
                 if ( typeof value === 'object' ) {
                     node.nodes = [];
-                    parse(value, node);
+                    parse(value, node, options);
                 }
                 parent.push(node);
             } else if ( Array.isArray(value) ) {
@@ -66,8 +66,8 @@ function parse(obj, parent) {
                     decl(parent, name, value[i]);
                 }
             } else if ( typeof value === 'object' && value !== null ) {
-                node = postcss.rule({ selector: name });
-                parse(value, node);
+                node = postcss.rule({ selector: name, raws: { semicolon: semicolon } });
+                parse(value, node, options);
                 parent.push(node);
             } else {
                 decl(parent, name, value);
@@ -76,8 +76,9 @@ function parse(obj, parent) {
     }
 }
 
-module.exports = function (obj) {
-    var root = postcss.root();
-    parse(obj, root);
+module.exports = function (obj, options) {
+    var opts = options || {};
+    var root = postcss.root({ raws: { semicolon: opts.semicolon } });
+    parse(obj, root, opts);
     return root;
 };
