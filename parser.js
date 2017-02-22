@@ -32,7 +32,7 @@ function dashify(str) {
 }
 
 function decl(parent, name, value) {
-    if ( value === false || value === null ) return;
+    if ( value === false || value === null || value === undefined ) return;
 
     name = dashify(name);
     if ( typeof value === 'number' ) {
